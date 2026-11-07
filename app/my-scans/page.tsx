@@ -137,3 +137,5 @@ export default function MyScansPage() {
     </main>
   );
 }
+
+export const dynamic = 'force-dynamic';

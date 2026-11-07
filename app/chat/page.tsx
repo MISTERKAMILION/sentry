@@ -253,3 +253,4 @@ export default function ChatPage() {
     </main>
   );
 }
+export const dynamic = 'force-dynamic';
