@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
@@ -11,6 +11,28 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [googleError, setGoogleError] = useState("");
+
+  useEffect(() => {
+    // Check for OAuth error in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get("error");
+    if (error) {
+      setGoogleError(error);
+    }
+  }, []);
+
+  const handleGoogleSignIn = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+    if (error) {
+      setGoogleError(error.message);
+    }
+  };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,6 +73,27 @@ export default function LoginPage() {
           <p style={{ color: "#9ca3af" }}>{isSignUp ? "Create your account" : "Sign in to your account"}</p>
         </div>
 
+        {/* Google Sign-In Button */}
+        <div style={{ marginBottom: "1.5rem" }}>
+          <button
+            onClick={handleGoogleSignIn}
+            style={{
+              width: "100%",
+              padding: "0.75rem",
+              borderRadius: "8px",
+              background: "#ffffff",
+              border: "1px solid #ddd",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "0.5rem",
+              fontWeight: "500",
+              cursor: "pointer",
+            }}>
+              Continue with Google
+            </button>
+        </div>
+
         <form onSubmit={handleAuth} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           <div>
             <label style={{ display: "block", marginBottom: "0.5rem", color: "#e5e7eb", fontSize: "0.875rem" }}>Email</label>
@@ -73,6 +116,12 @@ export default function LoginPage() {
               style={{ width: "100%", padding: "0.75rem", borderRadius: "8px", background: "#1a1a1a", color: "#e5e7eb", border: "1px solid #374151" }}
             />
           </div>
+
+          {googleError && (
+            <p style={{ color: "#ef4444", fontSize: "0.875rem", marginBottom: "1rem", textAlign: "center" }}>
+              {googleError}
+            </p>
+          )}
 
           {message && (
             <p style={{ color: message.includes("Check your email") ? "#10b981" : "#ef4444", fontSize: "0.875rem" }}>{message}</p>
