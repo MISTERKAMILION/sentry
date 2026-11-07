@@ -1,0 +1,187 @@
+/* S.E.N.T.R.Y Design System - Dark Control Room Aesthetic */
+
+/* Color Variables from the HTML design */
+:root {
+  --ink:#09030f;
+  --ink-2:#12071f;
+  --ink-3:#1b0d2e;
+  --text:#f4edfc;
+  --muted:#a999c4;
+  --pink:#f45fc8;
+  --pink-soft:#f8aae7;
+  --magenta:#c21fb0;
+  --violet:#8a12c9;
+  --deep:#3b0a68;
+  --ga:#ff4fd0;
+  --gb:#6f5cff;
+  --line:rgba(244,237,252,.13);
+  --ok:#8ff0c0;
+  --f-display:'Oxanium','Cairo',sans-serif;
+  --f-body:'Outfit','Cairo',system-ui,sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+}
+
+/* Color scheme transition */
+html[lang="ar"]{--track:0em;--f-display:'Cairo','Oxanium',sans-serif;--f-body:'Cairo','Outfit',system-ui,sans-serif}
+html[lang="ar"] .eyebrow,html[lang="ar"] .chip,html[lang="ar"] .field label,html[lang="ar"] .dl dt,html[lang="ar"] .strip dt,html[lang="ar"] .tag,html[lang="ar"] .pill,html[lang="ar"] .log,html[lang="ar"] #wipe .core p,html[lang="ar"] .inp .toggle{font-family:var(--f-body);text-transform:none}
+
+/* CSS Reset */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+
+/* Body and Base */
+body{
+  margin:0;
+  background:var(--ink);
+  color:var(--text);
+  font:400 16px/1.6 var(--f-body);
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+body::before{
+  content:"";
+  position:fixed;
+  inset:0 0 auto;height:env(safe-area-inset-top,0px);
+  z-index:25;
+  background:var(--ink)
+}
+
+/* Links and Buttons */
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--pink-soft);outline-offset:3px;border-radius:6px}
+
+/* Accessibility */
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* Wrapper */
+.wrap{max-width:1180px;margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* ---------- Background ---------- */
+.bg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.aurora{position:absolute;width:70vmax;height:70vmax;border-radius:50%;background:radial-gradient(closest-side,var(--c),transparent);opacity:.55;animation:drift 26s ease-in-out infinite alternate}
+.aurora.a{--c:rgba(138,18,201,.75);left:-20vmax;top:-26vmax}
+.aurora.b{--c:rgba(194,31,176,.5);right:-28vmax;top:10vmax;animation-duration:32s;animation-delay:-8s}
+.aurora.c{--c:rgba(59,10,104,.9);left:10vmax;bottom:-38vmax;animation-duration:38s;animation-delay:-14s}
+@keyframes drift{to{transform:translate(8vmax,6vmax) scale(1.12)}}
+
+/* Grid overlay */
+.grid{position:absolute;inset:0;background-image:linear-gradient(rgba(244,237,252,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(244,237,252,.045) 1px,transparent 1px);background-size:56px 56px;-webkit-mask-image:radial-gradient(ellipse at 50% 30%,#000 15%,transparent 72%);mask-image:radial-gradient(ellipse at 50% 30%,#000 15%,transparent 72%)}
+
+/* ---------- Gradient Text ---------- */
+.gradient-text{
+  background:var(--pink);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+
+/* ---------- Glitch Effect ---------- */
+.glitch{
+  animation:glitch .3s infinite alternate;
+}
+@keyframes glitch{
+  0%{transform:translate(0)}
+  20%{transform:translate(-5px,5px)}
+  40%{transform:translate(5px,-5px)}
+  60%{transform:translate(-3px,3px)}
+  80%{transform:translate(3px,-3px)}
+  100%{transform:translate(0)}
+}
+
+/* ---------- Buttons ---------- */
+.btn{
+  display:inline-block;
+  padding:.6rem 1.2rem;
+  border-radius:6px;
+  font-weight:600;
+  font-family:var(--f-display);
+  transition:.2s;
+  border:none;
+  cursor:pointer;
+}
+.btn--pink{background:var(--pink);color:var(--ink)}
+.btn--pink:hover{background:var(--magenta);color:var(--ink)}
+.btn--violet{background:var(--violet);color:white}
+.btn--violet:hover{background:#a025d3}
+.btn--ghost{background:transparent;color:var(--text)}
+.btn--ghost:hover{color:var(--pink)}
+
+/* ---------- Cards ---------- */
+.card{
+  background:var(--ink-2);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:1.5rem;
+}
+
+/* ---------- typography ---------- */
+.eyebrow{
+  font-family:var(--f-display);
+  font-size:.7rem;
+  text-transform:uppercase;
+  letter-spacing:.3em;
+  color:var(--muted);
+  margin-bottom:1rem;
+}
+.title{
+  font-family:var(--f-display);
+  font-size:2rem;
+  font-weight:800;
+  color:var(--text);
+}
+
+/* ---------- Chat Specific ---------- */
+.chat-container{
+  height:calc(100vh - 160px);
+  overflow-y:auto;
+  padding:1rem 0;
+}
+.message{
+  margin-bottom:1rem;
+  max-width:80%;
+}
+.message.user{margin-left:auto;}
+.message.assistant{margin-right:auto}
+
+/* ---------- Input ---------- */
+.inp{
+  display:flex;
+  gap:.5rem;
+  padding:.5rem 0;
+  border-top:1px solid var(--line);
+}
+.inp input{
+  flex:1;
+  padding:.5rem;
+  background:var(--ink-3);
+  border:none;
+  color:var(--text);
+  font-family:var(--f-body);
+  border-radius:6px;
+}
+.inp input:focus{
+  outline:2px solid var(--pink);
+}
+
+/* ---------- Chips / Tags ---------- */
+.chip{
+  display:inline-block;
+  padding:.2rem .5rem;
+  background:var(--ink-3);
+  border-radius:4px;
+  font-size:.8rem;
+  color:var(--muted);
+  margin:.1rem;
+}
+
+/* ---------- Aurora Credits ---------- */
+.aurora-credits{
+  position:fixed;
+  bottom:1rem;
+  right:1rem;
+  font-size:.7rem;
+  color:var(--muted);
+  font-family:var(--f-mono);
+}
