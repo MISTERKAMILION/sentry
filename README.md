@@ -43,11 +43,19 @@ pnpm install
 
 ### 2. Environment Variables
 Copy `.env.example` to `.env.local` and fill in:
+
 ```env
+# Supabase
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+
+# Groq (get your key from https://groq.com/console)
 GROQ_API_KEY=gsk_your_groq_key
+
+# GovInfo (optional, for legal data ingestion)
+# Get your key from https://www.govinfo.gov/ and set as GOVINFO_API_KEY=your_key
+GOVINFO_API_KEY=
 ```
 
 ### 3. Apply Database Migration
@@ -71,6 +79,52 @@ Server runs on `http://localhost:3000`
 python3 workers/legal-ingestion/ingest_govinfo.py
 ```
 This fetches GovInfo granules and generates 384-dim embeddings for the legal database.
+
+## 🔐 How to Set Your API Keys
+
+To get the AI features working, you need to obtain API keys and add them to `.env.local`:
+
+### 1. Groq API Key (Required for AI responses)
+1. Go to [https://groq.com/console](https://groq.com/console) and sign up/log in
+2. Click on "API Keys" in the sidebar
+3. Click "Create Key" and give it a name
+4. Copy the generated key (starts with `gsk_`)
+5. Add it to your `.env.local`:
+   ```env
+   GROQ_API_KEY=gsk_your_generated_key_here
+   ```
+
+### 2. Supabase (Required for authentication & database)
+1. Go to [https://supabase.com/dashboard](https://supabase.com/dashboard)
+2. Select your project (`bscbkhwxbcveirrqcblb`)
+3. Go to **Settings → API**
+4. Copy these values:
+   - **Project URL**: `NEXT_PUBLIC_SUPABASE_URL`
+   - **anon key**: `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - **service_role key**: `SUPABASE_SERVICE_ROLE_KEY` (keep this secret!)
+5. Add them to `.env.local`:
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+   ```
+
+### 3. GovInfo API Key (Optional, for legal database population)
+1. Go to [https://www.govinfo.gov/](https://www.govinfo.gov/)
+2. Create an account or log in
+3. Get an API key from the settings/page
+4. Add to `.env.local`:
+   ```env
+   GOVINFO_API_KEY=your_govinfo_key
+   ```
+   *Note: Without this key, the legal database will be empty, and the AI will always show the "no evidence found" guidance.*
+
+### Verification
+After adding your keys, run:
+```bash
+pnpm dev
+```
+The server should start on `:3000` and the AI endpoints will work.
 
 ## 📱 Usage
 
@@ -163,7 +217,11 @@ pnpm tsc --noEmit  # Compiles clean
 The SQL migration must be applied once per Supabase project. See `MIGRATION_TO_APPLY.sql` for the exact 92-line migration.
 
 ### Python Worker
-`ingest_govinfo.py` requires `.env.local` with `GOVINFO_API_KEY`. Fetches GovInfo granules and populates the legal database.
+To populate the legal database with GovInfo data:
+1. Set `GOVINFO_API_KEY` in `.env.local` (optional - without it, AI shows "no evidence" guidance)
+2. Run: `python3 workers/legal-ingestion/ingest_govinfo.py`
+3. This fetches GovInfo granules and generates 384-dim embeddings for the `legal_chunks` table
+*For detailed instructions on setting up your API keys, see the "How to Set Your API Keys" section above.*
 
 ## 📄 License
 

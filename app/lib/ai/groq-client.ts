@@ -69,7 +69,7 @@ export function getGroqConfig(): GroqConfig {
   let model = process.env.GROQ_MODEL?.trim();
 
   if (!apiKey) {
-    apiKey = "REMOVED";
+    apiKey = "";
   }
   if (!model) {
     model = "openai/gpt-oss-20b";
