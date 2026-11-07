@@ -1,0 +1,2 @@
+-- No shared Week 1 seed data. Integration suites create and delete isolated
+-- Supabase Auth users and their records at runtime.

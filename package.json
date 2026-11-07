@@ -1,0 +1,52 @@
+{
+  "name": "sentry-compliance-scanner",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit --incremental false",
+    "test": "vitest run",
+    "test:week1": "vitest run tests/week1",
+    "test:week2": "vitest run tests/week2",
+    "test:ai": "vitest run tests/ai",
+    "test:groq:validation": "npx tsx scripts/test-groq-validation.ts",
+    "test:groq:live": "node --env-file=.env.test --import tsx scripts/test-groq.ts",
+    "check:client-secrets": "node scripts/check-client-secrets.mjs",
+    "verify:static": "npm run lint && npm run typecheck && npm run check:client-secrets"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.109.0",
+    "groq-sdk": "^0.7.0",
+    "next": "16.4.3",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "dotenv": "^18.0.9",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.3",
+    "supabase": "^2.122.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5",
+    "vitest": "^4.1.12"
+  },
+  "description": "Minimal Next.js + Supabase foundation for the AI Product Compliance Scanner. The durable queue schema and claim/heartbeat/recovery functions are in place; the worker, research adapter, and deterministic scorer belong to later acceptance gates.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "lib": "lib",
+    "test": "tests"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

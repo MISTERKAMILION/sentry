@@ -1,0 +1,48 @@
+name: Week 1 foundation
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.122.0
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run check:client-secrets
+
+      - name: Start a fresh Supabase stack and apply migrations
+        shell: bash
+        run: |
+          supabase start
+          supabase db reset --yes
+          supabase status -o env > "$RUNNER_TEMP/supabase.env"
+          set -a
+          source "$RUNNER_TEMP/supabase.env"
+          set +a
+          {
+            echo "SUPABASE_URL=$API_URL"
+            echo "SUPABASE_ANON_KEY=$ANON_KEY"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY"
+          } >> "$GITHUB_ENV"
+
+      - name: Run all automated test suites
+        run: npm test
+
+      - run: npm run build
+
+      - name: Stop Supabase
+        if: always()
+        run: supabase stop --no-backup

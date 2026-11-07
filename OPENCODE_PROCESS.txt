@@ -1,0 +1,229 @@
+S.E.N.T.R.Y — OPENCODE PROCESS NOTES
+Last updated: 2026-10-25
+Read this first when starting a new session.
+
+1. WHO YOU ARE
+---------------
+You are opencode, an interactive CLI coding agent. The model is opencode/big-pickle.
+You are working for a manager who is coordinating a separate admin for Supabase
+and Groq credentials/tests. You are running in a restricted Linux sandbox on
+Ubuntu 26.04 x86_64, not on the manager's normal workstation.
+
+Be concise, make the requested change, verify it when possible, and never print,
+commit, or expose secrets. Do not commit unless explicitly asked. Do not add code
+comments unless asked.
+
+2. PROJECT
+----------
+Project: S.E.N.T.R.Y — AI Product Compliance Scanner.
+Root: /home/nossair-zaidi/S.E.N.T.R.Y/app
+Stack: Next.js 16.4.3, React 19.3.0, TypeScript, Supabase JS 2.109.0,
+Zod 4.6.7, Vitest 4.1.12.
+Database: Supabase Postgres, migrations 001-008.
+Git: branch main, root commit 2fc5ad7
+     "feat: week 1 baseline + week 2 queue schema + week 2.5 groq pipeline".
+Working tree was clean after the commit. This notes file is intentionally written
+after the commit and may be untracked until the manager asks to commit it.
+
+3. CURRENT OBJECTIVE
+--------------------
+Finish and validate the Week 2 durable queue, then validate the Week 2.5 Groq
+pipeline and get CI/integration tests running.
+
+Completed:
+- Week 1 schema, RLS, idempotent scan creation, API route, scoring config.
+- Week 1 integration suites under tests/week1.
+- Week 2 migrations:
+  - 20261025000500_add_week2_job_states.sql
+  - 20261025000600_add_week2_queue_columns.sql
+  - 20261025000700_restrict_trust_field_writes.sql
+  - 20261025000800_create_queue_functions.sql
+- Week 2 queue client: lib/queue/jobs.ts
+- Service-role client: lib/supabase/service.ts
+- Queue tests: tests/week2/queue.test.ts
+- Week 1 idempotency tests updated to assert four initial jobs.
+- Week 2.5 Groq pipeline under lib/ai/, scripts/test-groq*.ts,
+  tests/ai/validate-report.test.ts, docs/week-2.5-groq.md.
+- CI now runs npm test; package.json has test:week2.
+- README updated; .gitignore ignores env.test and .env*.
+- Commit 2fc5ad7 created.
+
+Still to do:
+- The hosted Supabase project still has no public tables or RPC functions. The
+  admin must apply migrations 001-008 to the linked project before integration
+  tests can pass.
+- Add missing runtime dependencies: groq-sdk and tsx.
+- Regenerate package-lock.json after adding them.
+- Run lint, typecheck, build, and non-DB tests if possible.
+- Run Supabase integration tests after migrations and tooling are available.
+- Get the admin's Groq connectivity test result (the key itself already works).
+- Push to GitHub and run CI if the manager provides a repo URL/credentials.
+
+4. ENVIRONMENT FACTS
+--------------------
+Missing: node, npm, npx, bun, deno, psql, supabase CLI, docker, podman.
+Available: curl, wget, tar, xz, git, python3, sudo, apt-get.
+sudo requires a password (passwordless sudo test failed). Do not ask the manager
+for their sudo password.
+Outbound HTTPS works (nodejs.org returned HTTP 200).
+No GitHub remote is configured. No GitHub credentials are known to be available.
+The sandbox can be fixed without root by downloading a Node binary tarball into
+/tmp/opencode and adding it to PATH.
+
+Credential check performed 2026-10-25:
+- The manager populated .env.test and closed the vim swap file.
+- SUPABASE_URL was incorrectly set to the project URL plus /rest/v1/. It was
+  normalized to the base project URL; Supabase clients append their own paths.
+- Supabase Auth health returned HTTP 200, so the URL and anon key work.
+- The service-role key is accepted by PostgREST.
+- The hosted project currently exposes only / and /rpc/rls_auto_enable in the
+  public schema. public.scans, public.scan_jobs, and
+  public.create_scan_idempotent are missing. This means migrations 001-008 have
+  not been applied to this hosted project, regardless of what was applied locally.
+- Groq /openai/v1/models returned HTTP 200 when called with a normal User-Agent.
+  Both openai/gpt-oss-20b and openai/gpt-oss-120b are available. A bare Python
+  urllib User-Agent was rejected by Cloudflare with code 1010, so use a normal
+  User-Agent in any diagnostic script.
+- No secret values were printed.
+
+5. CHOSEN PLAN — OPTION D FIRST
+-------------------------------
+The manager offered:
+A. apt install with sudo — blocked by sudo password.
+B. manually create .env.test — now populated by the manager. The URL was
+   normalized to the base project URL. The agent can edit files without nano.
+   Do not ask for secrets in chat.
+C. push to GitHub and run CI — still needs a repo URL/credentials and still fails
+   until groq-sdk/tsx are present.
+D. install a user-space Node toolchain in /tmp/opencode — recommended first.
+
+Planned Option D commands (adjust the exact Node version as needed):
+  mkdir -p /tmp/opencode/node
+  curl -fsSL https://nodejs.org/dist/latest-v22.x/ \
+    -o /tmp/opencode/node/index.html
+  # Resolve the linux-x64 tarball URL from that index, then:
+  curl -fsSL <tarball-url> -o /tmp/opencode/node/node.tar.xz
+  tar -xJf /tmp/opencode/node/node.tar.xz -C /tmp/opencode/node --strip-components=1
+  export PATH="/tmp/opencode/node/bin:$PATH"
+  node --version
+  npm --version
+  cd /home/nossair-zaidi/S.E.N.T.R.Y/app
+  npm install groq-sdk
+  npm install --save-dev tsx
+  npm run lint
+  npm run typecheck
+  npm run check:client-secrets
+  npm test
+  npm run build
+
+npm test may fail on integration suites until .env.test has a real local
+SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY and Supabase is running. Non-DB tests
+should still be runnable. Use the official npm registry if the lockfile's custom
+mirror is unreachable.
+
+6. CREDENTIAL / SECRET RULES
+----------------------------
+- .env.test is present and ignored by git.
+- Do not print, echo, cat, or commit secret values.
+- Local .env.test currently has all required values set:
+    SUPABASE_URL: set (base project URL, /rest/v1 suffix removed)
+    SUPABASE_ANON_KEY: set
+    SUPABASE_SERVICE_ROLE_KEY: set
+    GROQ_API_KEY: set
+    GROQ_MODEL: set (openai/gpt-oss-20b)
+  Auth and Groq connectivity were verified. The database schema was not applied
+  to the hosted project, so database RPC/table probes still return 404.
+- The Groq API key was shared in chat earlier and must be rotated after testing.
+- The service-role key must never be exposed to browser code.
+- GitHub Actions secrets should be set in the repo settings, not committed.
+
+7. WEEK 2 QUEUE CONTRACT
+------------------------
+- One public transactional wrapper: create_scan_idempotent, SECURITY DEFINER.
+- It calls private helpers internal_create_scan_only and
+  internal_enqueue_initial_jobs. Private helpers are not client-callable.
+- Initial scan creation inserts exactly four jobs:
+  legal, ip, safety, recalls.
+- Job identity is (scan_id, check_type).
+- anon/authenticated: SELECT on scans and scan_jobs, no direct INSERT/UPDATE/DELETE.
+  scans DELETE is intentionally left for a later decision.
+- Queue functions are service_role-only:
+  claim_job, heartbeat_job, recover_expired_leases, complete_job, fail_job.
+- claim_job increments attempts, uses FOR UPDATE SKIP LOCKED, sets running,
+  locks metadata, and issues a lease token. Default max_attempts is 3.
+- heartbeat_job extends only a live lease.
+- complete_job/fail_job require a live lease token; stale/expired -> SQLSTATE P0409.
+- fail_job retries with exponential backoff until max_attempts, then fails.
+- recover_expired_leases returns expired jobs to retry_wait with backoff, or fails
+  them when the attempt budget is exhausted. It sets error_code LEASE_EXPIRED.
+- Error codes: P0400 invalid input, P0401 auth required, P0404 unavailable,
+  P0409 stale lease/conflict, P0500 internal.
+- SQL/TS contract is validated with Zod in lib/queue/jobs.ts.
+
+8. TESTS / CI
+-------------
+- tests/week1: five mandatory integration suites using real Supabase Auth/RLS.
+- tests/week2/queue.test.ts: claim, concurrency, heartbeat, stale token,
+  expired-lease recovery (retry and terminal), complete/fail fencing, retry budget,
+  and denial of queue RPCs to authenticated users.
+- tests/ai/validate-report.test.ts: Week 2.5 validation unit tests.
+- CI workflow: .github/workflows/week1.yml, starts Supabase, applies migrations,
+  exports API_URL/ANON_KEY/SERVICE_ROLE_KEY, then runs npm test and npm run build.
+- CI will fail at typecheck/build until groq-sdk and tsx are installed.
+- Never replace RLS with mocks in Week 1/2 integration tests.
+
+9. IMPORTANT FILES
+------------------
+- app/api/scans/route.ts
+- lib/queue/jobs.ts
+- lib/supabase/service.ts
+- lib/ai/groq-client.ts
+- lib/ai/report-schema.ts
+- lib/ai/prompts.ts
+- lib/ai/validate-report.ts
+- tests/week1/01-rls-isolation.test.ts
+- tests/week1/02-rls-update-escalation.test.ts
+- tests/week1/03-child-table-isolation.test.ts
+- tests/week1/04-idempotency.test.ts
+- tests/week1/05-schema-contract.test.ts
+- tests/week2/queue.test.ts
+- tests/ai/validate-report.test.ts
+- supabase/migrations/20261025000100_create_types.sql through
+  supabase/migrations/20261025000800_create_queue_functions.sql
+- .github/workflows/week1.yml
+- docs/week-2.5-groq.md
+- README.md
+
+10. NEXT ACTIONS (IN ORDER)
+---------------------------
+1. Admin must apply migrations 001-008 to the hosted Supabase project
+   bscbkhwxbcveirrqcblb (for example, link it and run `supabase db push`, or run
+   the migration SQL in the dashboard SQL editor). Verify public.scans,
+   public.scan_jobs, and public.create_scan_idempotent exist.
+2. Proceed with Option D: install user-space Node 22 in /tmp/opencode.
+3. Install groq-sdk and tsx, regenerate package-lock.json.
+4. Run lint, typecheck, check:client-secrets, non-DB tests, and build.
+5. Fix any type/runtime errors found.
+6. Run `npm test` after the hosted schema exists, including the Week 2 queue suite.
+   The tests create real Auth users and must use the service-role key only in server
+   test code.
+7. The Groq key and configured model were already verified; still capture the
+   admin's connectivity output and fix any pipeline errors.
+8. When a GitHub repo URL and auth are available, add the remote and push main.
+   Then set Actions secrets and verify CI.
+9. Commit the dependency/lockfile and process-note changes only when the manager
+   explicitly asks.
+
+11. DECISION HISTORY / CAUTIONS
+-------------------------------
+- Earlier SQL had LIMIT placed after FOR UPDATE; this was corrected. PostgreSQL
+  requires LIMIT before FOR UPDATE.
+- fail_job was hardened to re-check status, lease token, and lease expiry in the
+  final UPDATE.
+- create_scan_idempotent was made SECURITY DEFINER to support the single-wrapper
+  design after revoking direct writes.
+- The manager confirmed the single transactional wrapper design and service-role
+  queue functions.
+- Do not silently change the queue contract, job count, or RLS/grant model.
+- Do not claim tests passed unless they were actually run.
+- Do not commit secrets. Do not commit unless asked.
