@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: "S.E.N.T.R.Y - Product Compliance Scanner",
   description: "AI Product Compliance Scanner",
